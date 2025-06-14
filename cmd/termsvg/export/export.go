@@ -18,6 +18,7 @@ type Cmd struct {
 	NoWindow        bool   `name:"nowindow" optional:"" short:"n" help:"don't render terminal window in svg"`
 	BackgroundColor string `optional:"" short:"b" help:"background color in hexadecimal format (e.g. #FFFFFF)"`
 	TextColor       string `optional:"" short:"t" help:"text color in hexadecimal format (e.g. #000000)"`
+	LastFrame       bool   `name:"last-frame" optional:"" help:"export only the last frame as static SVG"`
 }
 
 func (cmd *Cmd) Run() error {
@@ -26,7 +27,7 @@ func (cmd *Cmd) Run() error {
 		output = cmd.File + ".svg"
 	}
 
-	err := export(cmd.File, output, cmd.Mini, cmd.BackgroundColor, cmd.TextColor, cmd.NoWindow)
+	err := export(cmd.File, output, cmd.Mini, cmd.BackgroundColor, cmd.TextColor, cmd.NoWindow, cmd.LastFrame)
 	if err != nil {
 		return err
 	}
@@ -36,7 +37,7 @@ func (cmd *Cmd) Run() error {
 	return nil
 }
 
-func export(input, output string, mini bool, bgColor, textColor string, noWindow bool) error {
+func export(input, output string, mini bool, bgColor, textColor string, noWindow, lastFrame bool) error {
 	inputFile, err := os.ReadFile(input)
 	if err != nil {
 		return err
@@ -55,7 +56,7 @@ func export(input, output string, mini bool, bgColor, textColor string, noWindow
 
 	if mini {
 		out := new(bytes.Buffer)
-		svg.Export(*cast, out, bgColor, textColor, noWindow)
+		svg.Export(*cast, out, bgColor, textColor, noWindow, lastFrame)
 
 		m := minify.New()
 		m.AddFunc("image/svg+xml", msvg.Minify)
@@ -70,7 +71,7 @@ func export(input, output string, mini bool, bgColor, textColor string, noWindow
 			return err
 		}
 	} else {
-		svg.Export(*cast, outputFile, bgColor, textColor, noWindow)
+		svg.Export(*cast, outputFile, bgColor, textColor, noWindow, lastFrame)
 	}
 
 	return nil
